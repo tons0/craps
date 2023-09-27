@@ -5,13 +5,55 @@
 #include <malloc.h>
 #include <stdint.h>
 #include <iostream>
+#include <mmsystem.h>
 #include <string>
+#include <vector>
 #include "../resource.h"
 
 int Window::windowsOpened = 0;
 
+std::vector<Window::DrawObjects> objectsToDraw;
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
     switch(uMsg){
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+            for (const Window::DrawObjects& obj : objectsToDraw) {
+                switch (obj.type) {
+                    case Window::DrawObjects::Rectangle:
+                        FillRect(hdc, &obj.rect, CreateSolidBrush(obj.color));
+                        break;
+                    case Window::DrawObjects::Oval:
+                        Ellipse(hdc, obj.rect.left, obj.rect.top, obj.rect.right, obj.rect.bottom);
+                        break;
+                    case Window::DrawObjects::Image:
+                        if (obj.image != NULL) {
+                            HDC hdcImage = CreateCompatibleDC(hdc);
+
+                            BITMAP bmp;
+                            GetObject(obj.image, sizeof(BITMAP), &bmp);
+                            int srcWidth = bmp.bmWidth;
+                            int srcHeight = bmp.bmHeight;
+
+                            SelectObject(hdcImage, obj.image);
+
+                            StretchBlt(hdc, obj.rect.left, obj.rect.top, obj.rect.right - obj.rect.left, obj.rect.bottom - obj.rect.top, hdcImage, 0, 0, srcWidth, srcHeight, SRCCOPY);
+                            DeleteDC(hdcImage);
+                        }
+                        break;
+                    case Window::DrawObjects::Text:
+                        SelectObject(hdc, obj.hFont);
+                        SetTextColor(hdc, obj.color);
+                        SetBkMode(hdc, TRANSPARENT);
+                        TextOutA(hdc, obj.rect.left, obj.rect.top, obj.text, strlen(obj.text));
+                        break;
+                }
+            }
+
+            EndPaint(hWnd, &ps);
+            break;
+        }
         case WM_CLOSE:
             DestroyWindow(hWnd);
         break;
@@ -46,9 +88,7 @@ Window::Window(char* windowTitle, int width, int height, bool child):m_hInstance
 
     strcpy(ccc, _char);
     strcat(ccc, wop.c_str());
-    std::cout << ccc << "\n";
     CLASS_NAME = ccc;
-    std::cout << CLASS_NAME << "\n";
 
     WNDCLASS wndClass = {};
     wndClass.lpszClassName = CLASS_NAME;
@@ -76,29 +116,26 @@ Window::Window(char* windowTitle, int width, int height, bool child):m_hInstance
                             NULL, NULL, m_hInstance, NULL);
     ShowWindow(m_hWnd, SW_SHOW);
 
-    hdc = GetDC(m_hWnd);
+    m_hdc = GetDC(m_hWnd);
 
     memory = VirtualAlloc(0, width * height * 4, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
-    bitmap.bmiHeader.biSize = sizeof(bitmap.bmiHeader);
+    bitmap.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bitmap.bmiHeader.biWidth = width;
     bitmap.bmiHeader.biHeight = height;
     bitmap.bmiHeader.biPlanes = 1;
     bitmap.bmiHeader.biBitCount = 32;
     bitmap.bmiHeader.biCompression = BI_RGB;
 
-    SetFont("Arial", 24);
     windowsOpened++;
 }
 
 void Window::Update(){
-    //StretchDIBits(hdc, 0, 0, width, height, 0, 0, width, height, memory, &bitmap, DIB_RGB_COLORS, SRCCOPY);
-
-    //ReleaseDC(m_hWnd, hdc);
-
     if(GetCursorPos(&p)){
         ScreenToClient(m_hWnd, &p);
     }
+    objectsToDraw.clear();
+    InvalidateRect(m_hWnd, NULL, TRUE);
 }
 
 int Window::GetMouseX(){
@@ -109,6 +146,7 @@ int Window::GetMouseY(){
 }
 
 Window::~Window(){
+    ReleaseDC(NULL, m_hdc);
     UnregisterClass(CLASS_NAME, m_hInstance);
 }
 
@@ -130,61 +168,49 @@ bool Window::ProcessMessages(){
 Window::GetWidth(){ return width; }
 Window::GetHeight(){ return height; }
 
-void Window::Fill(int rect_x, int rect_y, int rect_width, int rect_height){
-    int r = (color >> 16) & 0xFF;
-    int g = (color >> 8) & 0xFF;
-    int b = color & 0xFF;
-
-    RECT rect = {rect_x, rect_y, rect_width + rect_x, rect_height + rect_y};
-    HBRUSH redBrush = CreateSolidBrush(RGB(r, g, b));
-    FillRect(hdc, &rect, redBrush);
-    DeleteObject(redBrush);
+void Window::AddDrawingObject(const DrawObjects& obj) {
+    objectsToDraw.push_back(obj);
+    InvalidateRect(m_hWnd, NULL, TRUE);
 }
 
-void Window::DrawString(char* text, int x, int y){
-    int r = (color >> 16) & 0xFF;
-    int g = (color >> 8) & 0xFF;
-    int b = color & 0xFF;
+void Window::Fill(int rect_x, int rect_y, int rect_width, int rect_height){
+    DrawObjects obj;
+    obj.type = DrawObjects::Rectangle;
+    obj.rect = { rect_x, rect_y, rect_x + rect_width, rect_y + rect_height };
+    obj.color = color;
+    AddDrawingObject(obj);
+}
 
-    SelectObject(hdc, hFont);
-    SetTextColor(hdc, RGB(r, g, b));
-
-    SetBkMode(hdc, TRANSPARENT);
-
-    TextOut(hdc, x, y, text, strlen(text));
+void Window::DrawString(char* text, int x, int y, char* fontFamily, int fontSize){
+    DrawObjects obj;
+    obj.type = DrawObjects::Text;
+    obj.text = text;
+    obj.rect = { x, y, 0, 0 };
+    obj.color = color;
+    obj.hFont = CreateFont(fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
+            OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE, fontFamily);
+    AddDrawingObject(obj);
 }
 
 void Window::DisplayImage(char* imagePath, int x, int y, int width, int height) {
     HBITMAP g_hImage = (HBITMAP)LoadImage(NULL, imagePath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
-    if (g_hImage == NULL) {
-        SetColor(0xdd0000);
-        SetFont("Arial", width > 24 ? 24 : (width < 10 ? 10 : width));
-        DrawString("IMG ERROR", x, y);
-        return;
-    }
-
-    BITMAP bmp;
-    GetObject(g_hImage, sizeof(BITMAP), &bmp);
-    int srcWidth = bmp.bmWidth;
-    int srcHeight = bmp.bmHeight;
-
-    HDC hdcImage = CreateCompatibleDC(hdc);
-    SelectObject(hdcImage, g_hImage);
-
-    StretchBlt(hdc, x, y, width, height, hdcImage, 0, 0, srcWidth, srcHeight, SRCCOPY);
-
-    DeleteDC(hdcImage);
+    DrawObjects obj;
+    obj.type = DrawObjects::Image;
+    obj.image = g_hImage;
+    obj.rect = { x, y, x + width, y + height };
+    AddDrawingObject(obj);
 }
 
 void Window::SetColor(uint32_t color){
     Window::color = color;
 }
 
-void Window::SetFont(char* fontFamily, int fontSize){
-    hFont = CreateFont(fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
-            OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-            DEFAULT_PITCH | FF_DONTCARE, fontFamily);
-}
-
 HWND Window::GetHWND(){ return m_hWnd; }
+
+void Window::PlaySoundFile(char* soundFile, int volume, DWORD settings){
+    WORD a = static_cast<WORD>( (float)volume / 100 * 65535);
+    waveOutSetVolume(NULL, MAKELONG(a, a));
+    PlaySound(soundFile, NULL, settings);
+}

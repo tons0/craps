@@ -1,3 +1,4 @@
 #include "resource.h"
 
 IDI_ICON ICON "neko.ico"
+IDI_SOUND WAVE "sound.wav"

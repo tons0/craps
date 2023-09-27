@@ -38,3 +38,57 @@
 1695775049 c:\users\tonso\documents\my dev place\c\game2\include\game.h
 	"Window.h"
 
+1695790173 source:c:\users\tonso\documents\github\craps\game2\main.cpp
+	<iostream>
+	<Window.h>
+	<mmsystem.h>
+	<vector>
+	"Window.h"
+	"Button.h"
+	"Player.h"
+	"Game.h"
+	"../resource.h"
+
+1695788530 c:\users\tonso\documents\github\craps\game2\include\window.h
+	<Windows.h>
+	<stdint.h>
+
+1695790236 c:\users\tonso\documents\github\craps\game2\include\button.h
+	"Window.h"
+
+1695790250 source:c:\users\tonso\documents\github\craps\game2\src\button.cpp
+	"Button.h"
+
+1695789036 source:c:\users\tonso\documents\github\craps\game2\src\window.cpp
+	"Window.h"
+	<windows.h>
+	<wingdi.h>
+	<cstdlib>
+	<malloc.h>
+	<stdint.h>
+	<iostream>
+	<mmsystem.h>
+	<string>
+	<vector>
+	"../resource.h"
+
+1695783788 c:\users\tonso\documents\github\craps\game2\resource.h
+
+1695775064 source:c:\users\tonso\documents\github\craps\game2\src\game.cpp
+	"Game.h"
+	"Window.h"
+
+1695775049 c:\users\tonso\documents\github\craps\game2\include\game.h
+	"Window.h"
+
+1695789561 source:c:\users\tonso\documents\github\craps\game2\src\player.cpp
+	"Player.h"
+	<time.h>
+	<string>
+
+1695782675 c:\users\tonso\documents\github\craps\game2\include\player.h
+	"Window.h"
+
+1695783708 source:c:\users\tonso\documents\github\craps\game2\resource.rc
+	"resource.h"
+

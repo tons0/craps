@@ -17,6 +17,7 @@
 				</Compiler>
 				<Linker>
 					<Add library="gdi32" />
+					<Add library="winmm" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -38,9 +39,17 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="include/Button.h" />
+		<Unit filename="include/Game.h" />
+		<Unit filename="include/Player.h" />
 		<Unit filename="include/Window.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="resource.h" />
+		<Unit filename="resource.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Unit filename="src/Button.cpp" />
+		<Unit filename="src/Game.cpp" />
+		<Unit filename="src/Player.cpp" />
 		<Unit filename="src/Window.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

@@ -10,10 +10,11 @@ class Button
         Button(char* title, int x, int y);
         Button(char* title, int x, int y, int width, int height);
         Button(char* title, int x, int y, int width, int height, uint32_t textColor, uint32_t bgColor);
+        Button(char* title, int x, int y, int width, int height, uint32_t textColor, uint32_t bgColor, bool selectable);
         Button(char* title, int x, int y, int width, int height, uint32_t textColor, uint32_t bgColor, char* fontFamily, int fontSize);
-        void Construct(char* title, int x, int y, int width, int height, uint32_t textColor, uint32_t bgColor, char* fontFamily, int fontSize);
+        void Construct(char* title, int x, int y, int width, int height, uint32_t textColor, uint32_t bgColor, char* fontFamily, int fontSize, bool selectable);
         void Render(Window &window);
-        bool CheckClick();
+        bool CheckClick(Window& window);
 
         bool selectable;
 
@@ -32,7 +33,6 @@ class Button
         char* text;
         char* fontFamily;
 
-    private:
         bool clicked;
 };
 

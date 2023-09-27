@@ -8,6 +8,16 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 class Window{
     public:
+        struct DrawObjects {
+            enum Type { Rectangle, Oval, Image, Text };
+            Type type;
+            RECT rect;
+            HBITMAP image;
+            char* text;
+            HFONT hFont;
+            uint32_t color;
+        };
+
         static int windowsOpened;
 
         Window(char* windowTitle, int width, int height, bool child = false);
@@ -21,10 +31,11 @@ class Window{
         bool ProcessMessages();
 
         void SetColor(uint32_t color);
-        void SetFont(char* fontFamily, int fontSize);
         void Fill(int x, int y, int d_width, int d_height);
-        void DrawString(char* text, int x, int y);
+        void DrawString(char* text, int x, int y, char* fontFamily, int fontSize);
         void DisplayImage(char* imagePath, int x, int y, int width, int height);
+        void PlaySoundFile(char* soundFile, int volume, DWORD settings);
+        void AddDrawingObject(const DrawObjects& obj);
 
         void Update();
 
@@ -34,12 +45,12 @@ class Window{
         HWND GetHWND();
 
     protected:
-        HDC hdc;
+        HDC m_hdc;
+        HDC d_hdc;
         RECT rect;
         int width;
         int height;
         uint32_t color;
-        HFONT hFont;
 
     private:
         const char* CLASS_NAME;
