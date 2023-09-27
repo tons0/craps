@@ -1,0 +1,40 @@
+# depslib dependency file v1.0
+1695778611 source:c:\users\tonso\documents\my dev place\c\game2\main.cpp
+	<iostream>
+	<time.h>
+	"Window.h"
+	"Button.h"
+
+1695777752 c:\users\tonso\documents\my dev place\c\game2\include\window.h
+	<Windows.h>
+	<stdint.h>
+
+1695778803 source:c:\users\tonso\documents\my dev place\c\game2\src\window.cpp
+	"Window.h"
+	<windows.h>
+	<wingdi.h>
+	<cstdlib>
+	<malloc.h>
+	<stdint.h>
+	<iostream>
+	<string>
+	"../resource.h"
+
+1695756956 source:c:\users\tonso\documents\my dev place\c\game2\src\button.cpp
+	"Button.h"
+
+1695756931 c:\users\tonso\documents\my dev place\c\game2\include\button.h
+	"Window.h"
+
+1695753472 source:c:\users\tonso\documents\my dev place\c\game2\resource.rc
+	"resource.h"
+
+1695753469 c:\users\tonso\documents\my dev place\c\game2\resource.h
+
+1695775064 source:c:\users\tonso\documents\my dev place\c\game2\src\game.cpp
+	"Game.h"
+	"Window.h"
+
+1695775049 c:\users\tonso\documents\my dev place\c\game2\include\game.h
+	"Window.h"
+
