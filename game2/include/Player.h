@@ -7,10 +7,11 @@ class Player{
     public:
         static int players;
 
-        Player(char* nome);
+        Player(const char* nome);
+        Player& operator =(char* nome);
         ~Player();
 
-        void RolarDados();
+        int RolarDados(); // 0 -> perdeu; 1 -> continua; 2 -> ganhou
         void Render(Window &window);
 
         const char* nome;
@@ -18,9 +19,11 @@ class Player{
         int dado2;
         int soma;
         int ponto;
+        bool primeiraJogada;
 
     protected:
-        double money;
+
+        int money;
         int playerId;
         int renderX;
         int renderY;

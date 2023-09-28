@@ -104,6 +104,7 @@ Window::Window(char* windowTitle, int width, int height, bool child):m_hInstance
 
     DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_OVERLAPPED | WS_VISIBLE;
 
+    RECT rect;
     rect.left = 250;
     rect.top = 250;
     rect.right = rect.left + width;
@@ -116,17 +117,6 @@ Window::Window(char* windowTitle, int width, int height, bool child):m_hInstance
                             NULL, NULL, m_hInstance, NULL);
     ShowWindow(m_hWnd, SW_SHOW);
 
-    m_hdc = GetDC(m_hWnd);
-
-    memory = VirtualAlloc(0, width * height * 4, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-
-    bitmap.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bitmap.bmiHeader.biWidth = width;
-    bitmap.bmiHeader.biHeight = height;
-    bitmap.bmiHeader.biPlanes = 1;
-    bitmap.bmiHeader.biBitCount = 32;
-    bitmap.bmiHeader.biCompression = BI_RGB;
-
     windowsOpened++;
 }
 
@@ -134,6 +124,7 @@ void Window::Update(){
     if(GetCursorPos(&p)){
         ScreenToClient(m_hWnd, &p);
     }
+
     objectsToDraw.clear();
     InvalidateRect(m_hWnd, NULL, TRUE);
 }
@@ -146,7 +137,7 @@ int Window::GetMouseY(){
 }
 
 Window::~Window(){
-    ReleaseDC(NULL, m_hdc);
+    ReleaseDC(NULL, GetDC(m_hWnd));
     UnregisterClass(CLASS_NAME, m_hInstance);
 }
 
@@ -213,4 +204,27 @@ void Window::PlaySoundFile(char* soundFile, int volume, DWORD settings){
     WORD a = static_cast<WORD>( (float)volume / 100 * 65535);
     waveOutSetVolume(NULL, MAKELONG(a, a));
     PlaySound(soundFile, NULL, settings);
+}
+
+void Window::ClearWindow() {
+    HDC hdc = GetDC(m_hWnd);
+
+    RECT rect;
+    GetClientRect(m_hWnd, &rect);
+
+    HDC memDC = CreateCompatibleDC(hdc);
+    HBITMAP memBitmap = CreateCompatibleBitmap(hdc, rect.right, rect.bottom);
+    HBITMAP hOldBitmap = (HBITMAP)SelectObject(memDC, memBitmap);
+
+    HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+    FillRect(memDC, &rect, hBrush);
+    DeleteObject(hBrush);
+
+    BitBlt(hdc, 0, 0, rect.right, rect.bottom, memDC, 0, 0, SRCCOPY);
+
+    SelectObject(memDC, hOldBitmap);
+    DeleteObject(memBitmap);
+    DeleteDC(memDC);
+
+    ReleaseDC(m_hWnd, hdc);
 }

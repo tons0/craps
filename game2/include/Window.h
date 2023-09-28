@@ -38,6 +38,7 @@ class Window{
         void AddDrawingObject(const DrawObjects& obj);
 
         void Update();
+        void ClearWindow();
 
         int GetMouseX();
         int GetMouseY();
@@ -45,9 +46,6 @@ class Window{
         HWND GetHWND();
 
     protected:
-        HDC m_hdc;
-        HDC d_hdc;
-        RECT rect;
         int width;
         int height;
         uint32_t color;
@@ -57,9 +55,6 @@ class Window{
         HINSTANCE m_hInstance;
         POINT p;
         HWND m_hWnd;
-        void* memory;
-        BITMAPINFO bitmap;
-        int w;
 };
 
 #endif // WINDOW_H
